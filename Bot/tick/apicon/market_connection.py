@@ -1,8 +1,3 @@
-
-
-BASE_URL = "https://paper-api.alpaca.markets"
-ALPACA_API_KEY = "AKLAH7PIG8T44M2HPSHG"
-ALPACA_SECRET_KEY = "z0YcwXHgyZ4isohfSut1uWC06eJo1m7vQngU85x1"
 from enum import Enum
 import time
 import alpaca_trade_api as tradeapi
