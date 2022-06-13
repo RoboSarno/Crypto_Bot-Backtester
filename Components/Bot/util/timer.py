@@ -1,6 +1,4 @@
 from threading import Timer
-# import streamlit as st
-# from streamlit.script_run_context import add_script_run_ctx
 
 class RepeatedTimer(object):
     def __init__(self, interval, function, *args, **kwargs):
@@ -29,7 +27,6 @@ class RepeatedTimer(object):
     def start(self):
         if not self.is_running:
             self._timer = Timer(self.interval, self._run)
-            # st.script_run_context.add_script_run_ctx(self._timer) 
             self._timer.start()
             self.is_running = True
 

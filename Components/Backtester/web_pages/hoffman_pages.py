@@ -325,6 +325,7 @@ def strat4_anal_WOT(risk, reward):
             if len(wallet) > 2:
                 # format wallet to be able to graph buy and sell signals
                 final_wallet = pd.DataFrame(wallet)
+                final_wallet['diff'] = final_wallet['Total_Buy_Power'].diff()
                 inital_wallet = final_wallet.iloc[0]
                 last_wallet = final_wallet.iloc[-1]
 
@@ -354,7 +355,7 @@ def strat4_anal_WOT(risk, reward):
                         fig = make_subplots(rows=1, cols=1, subplot_titles="Wallet Worth over Time", vertical_spacing=0.1, shared_xaxes=True)
                         fig.append_trace(
                             go.Waterfall(
-                                x = final_wallet['Datetime'],y = final_wallet['Current_Buy_Power'],
+                                x = final_wallet['Datetime'],y = final_wallet['diff'],
                                 decreasing = {"marker":{"color":"red", "line":{'width':4, "color":"red"}}},
                                 increasing = {"marker":{"color":"green", "line":{'width':4, "color":"green"}}},
                                 connector = {"line":{"color":"#FFFFFF", 'dash': 'dot', 'width':2}},
@@ -380,7 +381,7 @@ def hoffman_graph(strat_df, buy_df, sell_df, sig_exists=True):
     Returns:
         plotly subplot: plot to display in streamlit
     """
-    fig = make_subplots(rows=2, cols=1, subplot_titles=("Hoffman Strategy", ''), vertical_spacing=0.1, shared_xaxes=True)
+    fig = make_subplots(rows=1, cols=1, subplot_titles=("Hoffman Strategy", ''), vertical_spacing=0.1, shared_xaxes=True)
     fig.append_trace(
         go.Scatter(
             x=strat_df['datetime'], y=strat_df['close'], opacity=0.5, 
@@ -399,7 +400,7 @@ def hoffman_graph(strat_df, buy_df, sell_df, sig_exists=True):
     fig.append_trace(
         go.Scatter(
             x=strat_df['datetime'], y=strat_df['ema_20'], opacity=0.2, 
-            line={'width':3, 'color':'blue'}, legendgroup='group3', name='EMA 20'
+            line={'width':3, 'color':'orange'}, legendgroup='group3', name='EMA 20'
         ),  row=1, col=1)
     fig.append_trace(
         go.Scatter(
@@ -414,12 +415,12 @@ def hoffman_graph(strat_df, buy_df, sell_df, sig_exists=True):
     fig.append_trace(
         go.Scatter(
             x=strat_df['datetime'], y=strat_df['ema_144'], opacity=0.2, 
-            line={'width':3, 'color':'blue'}, legendgroup='group3', name='EMA 144'
+            line={'width':3, 'color':'orange'}, legendgroup='group3', name='EMA 144'
         ),  row=1, col=1)
     fig.append_trace(
         go.Scatter(
             x=strat_df['datetime'], y=strat_df['ema_35'], opacity=0.2, 
-            line={'width':3, 'color':'blue'}, legendgroup='group3', name='EMA 35'
+            line={'width':3, 'color':'orange'}, legendgroup='group3', name='EMA 35'
         ),  row=1, col=1)
     fig.append_trace(
         go.Scatter(
@@ -429,8 +430,8 @@ def hoffman_graph(strat_df, buy_df, sell_df, sig_exists=True):
     if sig_exists:
         wallet_buy = buy_df.copy()
         wallet_sell = sell_df.copy()
-        wallet_buy['close'] = wallet_buy.iloc[:, -2]/USD_price
-        wallet_sell['close'] = wallet_sell.iloc[:,-2]/USD_price
+        wallet_buy['close'] = wallet_buy.iloc[:, -4]/USD_price
+        wallet_sell['close'] = wallet_sell.iloc[:,-4]/USD_price
         fig.append_trace(
             go.Scatter(
                 x=wallet_buy["Datetime"], y=wallet_buy["close"], opacity=1, 

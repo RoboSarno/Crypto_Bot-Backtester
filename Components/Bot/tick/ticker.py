@@ -28,6 +28,10 @@ class Ticker:
         self.last_action = None
     
     def update_historical_info(self):
+        """
+        _summary_
+            updates the open high low close table for all tickers
+        """
         raw_historical_data = self.binance_connection.get_historical_ohlc_data(symbol=self.TICKER_ID, past_days=5, interval=self.INTERVAL)
         last_date = raw_historical_data.tail(1)['datetime'].values[0]
         # insert/update historical ticket data into db ticker table
@@ -35,56 +39,11 @@ class Ticker:
 
         self.db_connection.insert_historical_data(raw_historical_data, self.TICKER_ID, self.STRAT)
         
-        # historical_df = self.db_connection.select_historical_data(self.STRAT,  self.TICKER_ID)
-        # if historical_df.empty:
-        #     print('no historical data')
-        #     pass
-        # else:
-        #     strategy = tickobjs.Strategy(historical_df, self.TICKER_ID)
-        #     # if strategy 1
-        #     if self.STRAT == 1:
-        #         strategy.psar()
-        #         strategy.macd()
-        #         strategy.ema()
-        #         strategy.add_db_elements()
-        #         result = strategy.get_strat_df()  
-            # if strategy 2        
-            # elif self.STRAT == 2:
-            #     strategy.super_trend()
-            #     strategy.rsi()
-            #     strategy.ema()
-            #     strategy.add_db_elements()
-            #     result = strategy.get_strat_df()  
-                
-            # elif self.STRAT == 3:
-            #     strategy.Squeeze_momentum()
-            #     result = strategy.get_strat_df()  
-            #     print(result)
-            # if strategy 4     
-            # elif self.STRAT == 4:
-            #     strategy.sma(5)
-            #     strategy.ema(18)
-            #     strategy.ema(20)
-            #     strategy.sma(50)
-            #     strategy.sma(89)
-            #     strategy.ema(144)
-            #     k = strategy.ema(35)
-            #     r = strategy.rma(35)
-            #     ku = (r * 0.5) + k
-            #     strategy.master_df = pd.concat([strategy.master_df, ku], axis=1, join="inner")
-            #     strategy.master_df = strategy.master_df.rename(columns={0: "ku"})
-            #     strategy.hoff()
-            #     strategy.add_db_elements()
-            #     result = strategy.get_strat_df()
-
-            # del strategy 
-            # # insert/update strat data into db strat table
-            # self.db_connection.insert_strat_table(result, self.STRAT)
-
-        
     def update_database_info(self):
-        """_summary_
-            - update db information regarding strategy and ticker id
+        """
+        _summary_
+            updates database info for open high low close and updates strategy table info
+            Note: Function is kinda slow needs refactoring
         """
         self.update_historical_info()
         # -------------------------------------
@@ -112,12 +71,7 @@ class Ticker:
                 strategy.rsi()
                 strategy.ema()
                 strategy.add_db_elements()
-                result = strategy.get_strat_df()  
-                
-            elif self.STRAT == 3:
-                strategy.Squeeze_momentum()
-                result = strategy.get_strat_df()  
-                print(result)
+                result = strategy.get_strat_df()         
             # if strategy 4     
             elif self.STRAT == 4:
                 strategy.sma(5)
@@ -135,7 +89,6 @@ class Ticker:
                 strategy.add_db_elements()
                 result = strategy.get_strat_df()
                 
-            # print(result['datetime'])
 
             del strategy 
             # insert/update strat data into db strat table
@@ -143,9 +96,10 @@ class Ticker:
             
             del result
             
+            # select strat info data
             strategy_df = self.db_connection.select_strat_data(self.STRAT, self.TICKER_ID)
 
-            # # update/insert strat buy and sell data into  db strat_b_s table
+            # update/insert strat buy and sell data into  db strat_b_s table
             self.last_action = self.db_connection.insert_buy_sell_times(strategy_df, self.STRAT, self.TICKER_ID)
             del strategy_df
         

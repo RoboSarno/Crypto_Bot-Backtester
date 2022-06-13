@@ -3,9 +3,9 @@ import pandas as pd
 
 class Strategy:
     def __init__(self, raw_df, ticker_id):
-        """_summary_
-            - init Strategy object varibles
-
+        """
+        _summary_
+            init Strategy object varibles
         Args:
             raw_df (pd.Dataframe): current candle stick data
             ticker_id (string): ticker id
@@ -16,30 +16,28 @@ class Strategy:
 
          
     def add_db_elements(self):
-        """_summary_
-            - add db elements to pandas df
         """
-        # print(self.master_df.index)
-        # print(self.raw_df.index)
+        _summary_
+            add db elements to pandas df
+        """
         self.master_df = self.master_df.rename(columns=str.lower)
         self.master_df['ticker_id'] = self.ticker_id
         self.master_df['datetime'] = self.raw_df['datetime']
-        # print(self.master_df.reindex_like(self.raw_df))
         self.master_df['close'] = self.raw_df['close']
         self.master_df['high'] = self.raw_df['high']
         self.master_df['low'] = self.raw_df['low']
         self.master_df['open'] = self.raw_df['open']
         
- 
- 
     def get_strat_df(self):
-        """_summary_
+        """
+        _summary_
 
         Returns:
             pd.dataframe: strat table data
         """
         return self.master_df 
-    
+
+# ------------------------------------------------------------------ Different Stratagies
     def super_trend(self, period=14, atr_multiplier=3):
         """_summary_
             - supertrend
@@ -181,30 +179,6 @@ class Strategy:
                         )
         
         return strat_df
-    
-    def Squeeze_momentum(self, length=20, mult=2.0, lengthKC=20, multKC=1.5, useTrueRange=True):
-        pass
-
-        # Calculate BB
-        basis = self.sma(length)
-        print(basis)
-        # dev = multKC * stdev(source, length)
-        # upperBB = basis + dev
-        # lowerBB = basis - dev
-
-        # // Calculate KC
-        # ma = sma(source, lengthKC)
-        # range = useTrueRange ? tr : (high - low)
-        # rangema = sma(range, lengthKC)
-        # upperKC = ma + rangema * multKC
-        # lowerKC = ma - rangema * multKC
-
-        # sqzOn  = (lowerBB > lowerKC) and (upperBB < upperKC)
-        # sqzOff = (lowerBB < lowerKC) and (upperBB > upperKC)
-        # noSqz  = (sqzOn == false) and (sqzOff == false)
-
-        # val = linreg(source  -  avg(avg(highest(high, lengthKC), lowest(low, lengthKC)),sma(close,lengthKC)), 
-        #             lengthKC,0)
             
     def hoff(self, period=45):
         """_summary_
@@ -242,3 +216,4 @@ class Strategy:
         # if master df is not empty add to exsisting df
         else:
             self.master_df = pd.concat([self.master_df, strat_df], axis=1, join="inner")
+# ------------------------------------------------------------------ Different Stratagies

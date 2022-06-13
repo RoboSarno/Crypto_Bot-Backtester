@@ -20,8 +20,6 @@ menu_data = [
      'label':"15 min Strategies", 
      'submenu':[{'id':'anal_RES','icon': "📈", 'label':"RES Analysis"},
                 {'id':'anal_H','icon': "📈", 'label':"H Analysis"}]},
-    {'icon': "🧠",
-     'label':"Forcasting Beta"},
     {'icon': "ℹ️",
      'label':"Download Data"},
 ]
@@ -56,11 +54,13 @@ def backtester():
     elif f"{menu_id}" == 'anal_H':
         web_pages.strat4_anal_page(2,1) # anal page for strat 4
         
+
     elif f"{menu_id}" == 'Download Data':
         web_pages.download_csv_page() # download data page
-        
-    elif f"{menu_id}" == 'Forcasting Beta':
-        web_pages.forecasting_page() # forcasting close page
+
+    # Future improvment    
+    # elif f"{menu_id}" == 'Forcasting Beta':
+    #     web_pages.forecasting_page() # forcasting close page
     # page selection ---------------------------
 
   

@@ -104,7 +104,6 @@ class Wallet:
                     #       'Number of Shares Bought Cost:', (shares_rsk * row['close']),
                     #       'Current Buy power', self.wallet_info['Current_Buy_Power'], 
                     #       'Number of shares Shares', self.wallet_info['Shares'])
-
             # if sell que
             elif row['b_s'] == False:
                 if self.wallet_info['Shares'] > shares_rwd:
@@ -125,10 +124,18 @@ class Wallet:
                     self.wallet_info['b_s'] = bool(row['b_s'])
                     # append to wallet
                     ans.append(deepcopy(self.wallet_info))
+
                     # print('Last Buy power', last, 
                     #       'Number of Shares Sold Worth:', (shares_rwd * row['close']),
                     #       'Current Buy power', self.wallet_info['Current_Buy_Power'], 
                     #       'Number of shares Shares', self.wallet_info['Shares'])
+            self.wallet_info['Total_Buy_Power'] = (self.wallet_info['Shares']*row['close']) + self.wallet_info['Current_Buy_Power']
+            # print(f"""The number of shares you currently have is {self.wallet_info['Shares']}. The current worth of those shares is {self.wallet_info['Shares']*row['close']}. The current wallet buy power with out the worth of shares is {self.wallet_info['Current_Buy_Power']}. The current worth of you wallet is {(self.wallet_info['Shares']*row['close']) + self.wallet_info['Current_Buy_Power']}""")
+                
+            # at the begining of each iteration add the current wallet worth
+            # current_wallet_worth = self.wallet_info['Shares'] *  row['close']
+            # self.wallet_info['Current_Buy_Power'] += current_wallet_worth
+
         # get last close
         last_close = ans[-1]['close']
         # calculate last wallet shares + there worth

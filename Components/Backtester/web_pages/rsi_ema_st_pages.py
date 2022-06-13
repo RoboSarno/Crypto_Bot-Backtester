@@ -345,6 +345,7 @@ def strat2_anal_WOT(risk, reward):
             if len(wallet) > 2:
                 # format wallet to be able to graph buy and sell signals
                 final_wallet = pd.DataFrame(wallet)
+                final_wallet['diff'] = final_wallet['Total_Buy_Power'].diff()
                 inital_wallet = final_wallet.iloc[0]
                 last_wallet = final_wallet.iloc[-1]
                 final_wallet['Datetime'] = pd.to_datetime(final_wallet['Datetime'], format='%Y%m%d-%H%M%S')
@@ -372,7 +373,7 @@ def strat2_anal_WOT(risk, reward):
                         fig = make_subplots(rows=1, cols=1, subplot_titles="Wallet Worth over Time", vertical_spacing=0.1, shared_xaxes=True)
                         fig.append_trace(
                             go.Waterfall(
-                                x = final_wallet['Datetime'],y = final_wallet['Current_Buy_Power'],
+                                x = final_wallet['Datetime'],y = final_wallet['diff'],
                                 decreasing = {"marker":{"color":"red", "line":{'width':4, "color":"red"}}},
                                 increasing = {"marker":{"color":"green", "line":{'width':4, "color":"green"}}},
                                 connector = {"line":{"color":"#FFFFFF", 'dash': 'dot', 'width':2}},
@@ -427,17 +428,17 @@ def rsi_ema_st_strat_graph(strat_df, buy_df, sell_df, sig_exists=True):
     if sig_exists:
         wallet_buy = buy_df.copy()
         wallet_sell = sell_df.copy()
-        wallet_buy['close'] = wallet_buy.iloc[:, -2]/USD_price
-        wallet_sell['close'] = wallet_sell.iloc[:,-2]/USD_price
+        wallet_buy['close'] = wallet_buy.iloc[:, -4]/USD_price
+        wallet_sell['close'] = wallet_sell.iloc[:,-4]/USD_price
         fig.append_trace(
             go.Scatter(
                 x=wallet_buy["Datetime"], y=wallet_buy["close"], opacity=1, 
-                line={'color':'green'}, mode="markers", legendgroup='group1', name='Buy Signal'
+                line={'color':'green'}, mode="markers", legendgroup='group3', name='Buy Signal'
             ),  row=1, col=1)
         fig.append_trace(
             go.Scatter(
                 x=wallet_sell["Datetime"], y=wallet_sell["close"], opacity=1,
-                line={'color':'red'}, mode="markers", legendgroup='group1', name='Sell Signal'
+                line={'color':'red'}, mode="markers", legendgroup='group3', name='Sell Signal'
             ),  row=1, col=1)
     fig.update_layout(height=800, width=800, font=dict(size=15, color='#e1e1e1'))
     fig.update_xaxes(title_text="Datetime", gridcolor='#1f292f', 

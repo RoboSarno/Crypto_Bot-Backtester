@@ -5,13 +5,12 @@ import streamlit as st
 import pandas as pd
 import sys
 import os
-from datetime import datetime
-import pytz
+from sqlalchemy import create_engine, MetaData, Table, Column, Numeric, Integer, VARCHAR, update, bindparam, and_
 
 class Database:
     def __init__(self):
         """_summary_
-            - init Datbase object varibles
+            - set up enironment varibles for database connection
         """
         self.hostname = os.environ.get('AWS_DB_HOSTNAME', '-1')
         self.port_id = int(os.environ.get('AWS_DB_PORT_ID', '-1'))
@@ -36,12 +35,10 @@ class Database:
         # create ticker db if it doesnt exsist
         self.create_TickerTable()
     
-    """
-                                                            __ HELPERS __
-    """
     def check_if_table_exists(self, conn, ticker):
-        """_summary_
-         - check if table exsists
+        """
+        _summary_
+            check if table exsists
          
         Args:
             conn (psycopg2): conn
@@ -56,10 +53,6 @@ class Database:
         cur.execute('''select exists(select * from information_schema.tables where table_name=%s)''', (str(ticker),))
         return (cur.fetchone()[0], cur)
     
-    
-    """
-                                                            __ CREATE/UPDATE TABLE __
-    """
     def create_TickerTable(self):
         """_summary_
             Create Ticker ID Table
@@ -83,8 +76,9 @@ class Database:
         self.close_db(conn)
 
     def create_new_table(self, df, table_name): 
-        """_summary_
-            - create new table 
+        """
+        _summary_
+            create new table 
         Args:
             df (pd.Dataframe): raw candle stick data
             table_name (string): table name
@@ -100,9 +94,9 @@ class Database:
         return df
 
     def create_table_historical_db_empty(self, df, table_name):
-        """_summary_
-            - Append to historical table if it exists
-
+        """
+        _summary_
+            Create table if doesnt exsist
         Args:
             df (pd.Dataframe): raw candle stick data
             table_name (string): table name
@@ -127,8 +121,6 @@ class Database:
             h_df (pd.Dataframe): historical db table info
             table_name (string): table name
         """
-
-
         # right join
         hist = h_df.drop_duplicates(subset=['datetime'])
         last_hist_datetime = pd.to_datetime(hist.tail(1)['datetime'].values[0], format='%Y%m%d %H:%M:%S',utc=True).tz_convert('US/Pacific')
@@ -143,21 +135,12 @@ class Database:
                 # make sure datetime is the index
                 # check difference is not empty
         if not diff.empty:
-            # # get the last element in hist as the starting element in c_df and make that diff
-            # print('append_current_historical_db_table::diff')
-            # add new rows from the last 60 day raw ticker data 
             myeng = create_engine(self.url)
             dbConnection = myeng.connect()
             diff.to_sql(con=myeng, name=table_name,  if_exists='append', index=True)
             dbConnection.close()
             return diff
-        print(f'current and {table_name} have no difference')
         
-    
-    
-    """
-                                                            __ INSERT ELEMENTS INTO TABLES __
-    """
     def insert_ticker(self, ticker, date):
         """_summary_
             - Insert Element into Ticker ID Table
@@ -209,32 +192,23 @@ class Database:
         if db_open[0]:
             # select the historical raw data from db
             historical_df = self.select_historical_data(strategy, ticker_label)
-            # ---
             # if the historical raw data from db is empty
             if historical_df.empty:
-                # print('insert_historical_data::added_df::')
                 added_df = self.create_table_historical_db_empty(current_df, table_name)
                 return added_df
             else:
-                # print('insert_historical_data::joined_list')
                 joined_list = self.append_current_historical_db_table(current_df, historical_df, table_name)
                 return joined_list 
                          
         # if table doesnt exsist
         else:
-            # print('insert_historical_data::added_df')
             added_df = self.create_new_table(current_df, table_name) 
             return added_df    
     
-    """
-                                                            __ INSERT BUY AND SELL TIMES HELPER __
-    """
-    """
-                                        __ STOP LOSS __
-    """
     def hoff_stoploss(self, r):
-        """_summary_
-            - hoffman strat stop loss
+        """
+        _summary_
+            hoffman strat stop loss
         
         Args:
             r (pd.Dataframe): row
@@ -250,8 +224,9 @@ class Database:
         return (None, None)
  
     def default_stoploss(self, r):
-        """_summary_
-            - default stop loss
+        """
+        _summary_
+            default stop loss
             
         Args:
             r (pd.Dataframe): row 
@@ -266,8 +241,9 @@ class Database:
         return (None, None)
         
     def default_buysig(self, r, i):
-        """_summary_
-            - default buy signal
+        """
+        _summary_
+            default buy signal
         Args:
             r (pd.Dataframe): row
             i (pd.index): index
@@ -287,8 +263,9 @@ class Database:
             return temp
     
     def default_sellsig(self, r, i):
-        """_summary_
-            - default sell signal
+        """
+        _summary_
+            default sell signal
         Args:
             r (pd.Dataframe): row
             i (pd.index): index
@@ -325,21 +302,12 @@ class Database:
             strategy_df = self.fast_is_buy_signal_pme(strat_df)
         elif strategy == 2:
             table_name= 'st_rsi_ema_b_s_table'
-            # strategy_df = strat_df.copy() 
             strategy_df = self.fast_is_buy_signal_res(strat_df)
         elif strategy == 4:
             table_name = 'hoffman_b_s_table'
             strategy_df = strat_df.copy() 
-            # strat_df = self.fast_is_buy_signal_h(strategy_df)
-        # print(strategy_df.head())
-        # https://medium.com/p/805030df4f06
-        # get buy and sell signals
-        # print('buy----------------------------')
-        # print(strategy_df.groupby(['b0'])['b0'].count())
-        # print('---')
-        # print('sell----------------------------')
-        # print(strategy_df.groupby(['s0'])['s0'].count())
-        # print('---')
+
+
         # add feture that if it drops more sell more maybe
         for i, r in strategy_df.iterrows():
             if strategy == 1:
@@ -443,7 +411,6 @@ class Database:
             df (pd.Dataframe): insert strategy table based on strategy
             strategy (int): signal for what strategy to run
         """
-        # current_data = df.sort_values(by=['datetime'])
         # set ticker id
         ticker_label = str(df['ticker_id'].iloc[-1])
         # get raw strategy data table name based on strategy
@@ -484,13 +451,10 @@ class Database:
         else:
             self.create_new_table(df, table_name)
     
-    
-    """
-                                                            __ SELECT ELEMENTS FROM TABLE __
-    """
     def select_historical_data(self, strategy, ticker_label):
-        """_summary_
-        Select raw historical data based on ticker ID
+        """
+        _summary_
+            Select raw historical data based on ticker ID
         
         Args:
             stratagy (int): specify strategy based on strategy
@@ -518,15 +482,16 @@ class Database:
         return exsisting_df
 
     def select_strat_data(self, strategy, ticker_label):
-        """_summary_
-            - Select raw strategy data table as pandas df
-
+        """
+        _summary_
+            Select strat data based on ticker ID and strat
+        
         Args:
-            strategy (_type_): strategy
-            ticker_label (_type_): ticker id
-
+            stratagy (int): specify strategy based on strategy
+            ticker_label (string): specify ticker label to run strategy
+            
         Returns:
-            pd.Dataframe: strat historical data table
+            pd.Dataframe: raw historical data
         """
         # get strat table name based on ticker timeframe and strategy
         if strategy == 1:
@@ -548,13 +513,12 @@ class Database:
         return exsisting_df
 
     def select_strategy_b_s(self, table_name, ticker_label):
-        """_summary_
-            - Select raw buy_sell strategy data table as pandas df
-
+        """
+        _summary_
+            Select raw buy_sell strategy database table using strat and ticker id
         Args:
             table_name (string): table name
             ticker_label (string): ticker id
-
         Returns:
             pd.Dateframe: raw buy_sell strategy data
         """
@@ -566,11 +530,17 @@ class Database:
         dbConnection.close()
         return exsisting_df     
     
-    
-    """
-                                                            __ BUY AND SELL SIGNAL STRATEGY __
-    """
     def fast_is_buy_signal_pme(self, df):
+        """
+        _summary_
+            find PSAR MACD EMA buy and sell signals
+
+        Args:
+            df (pd.DataFrame): Strat df
+
+        Returns:
+            pd.DataFrame: PSAR MACD EMA buy and sell signals
+        """
         # make buy rows
         df['b0'], df['b1'], df['b2'] = None, None, None
         df.loc[((df['close'] > df['ema_200']) & (df['macdh_12_26_9'] > 0)), 'b1'] = True
@@ -588,6 +558,16 @@ class Database:
         return df
                    
     def fast_is_buy_signal_res(self, df):
+        """
+        _summary_
+            Find RSI EMA ST buy and sell signals
+
+        Args:
+            df (_type_): Strat df
+
+        Returns:
+            pd.DataFrame: RSI EMA ST buy and sell signals
+        """
         df['b0'], df['b1'], df['b2'] = None, None, None
         df.loc[((df['supertd_14_3.0'] == 1) & (df['rsi_14_a_70'] == 1)), 'b1'] = True
         df.loc[(df['supertl_14_3.0'] > df['ema_200']), 'b2'] = True
@@ -599,26 +579,14 @@ class Database:
         df.loc[((df['s1'] == True) & (df['s2'] == True)), 's0'] = True
         
         return df
-        
-    # https://www.youtube.com/watch?v=joO1bmGaBys&t=294s
-    # def buy_signal_adx_ema(self, r, i):
-    #     on first r['low'] < r[ema_20]:
-    #           set entry candle which is high
-    #     if the r[open] is > entry:
-    #           stop loss is the entry
 
-        
-        
-
-    
-    # HOFFMAN HELPER
     def is_buy_signal_hoff(self, r, i):
-        """_summary_
-            - HOFF buy sig
+        """
+        _summary_
+            HOFF buy sig
         Args:
             r (pd.Dataframe): row
             i (pd.index): index
-
         Returns:
             dict: row
         """
@@ -636,12 +604,12 @@ class Database:
 
         return None
     def is_sell_signal_hoff(self, r, i):
-        """_summary_
-            - HOFF sell sig
+        """
+        _summary_
+            HOFF sell sig
         Args:
             r (pd.Dataframe): row
             i (pd.index): index
-
         Returns:
             dict: row
         """
@@ -657,9 +625,6 @@ class Database:
                  
         return None
 
-    """
-                                                            __ OPEN/CLOSE DATABASE __
-    """
     def open_db(self):
         """_summary_
         open current connection
