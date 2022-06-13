@@ -57,7 +57,7 @@ HOFFMAN preformance:
 - val_loss: 0.1309
 - val_mean_absolute_error: 0.2869
 
-There scores were low but when testing with live trades performance seemed questionable. However they did seem to follow the general trend which is a good sign. Regardless, I believe my strategies and my NN's greatly reduced the amount of loss an average trader would see in investing aimlessly. Not only did I choose unknown crypto currencies, but I was still able to reduce my losses and maximize gains. With a little more fine tuning and adding more complex stratagies I believe its possible to discover investment strategies that would make the Crypto Market worth it.
+There scores were low but when testing with live trades performance seemed questionable. However, they did seem to follow the general trend which is a good sign. Regardless, I believe my strategies and my NN's greatly reduced the amount of loss an average trader would see in investing aimlessly. Not only did I choose unknown crypto currencies, but I was still able to reduce my losses and maximize gains. With a little finer tuning and adding more complex strategies I believe it’s possible to discover investment strategies that would make the Crypto Market worth it.
 
 ## Future Improvements:
 
